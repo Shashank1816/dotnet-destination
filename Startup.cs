@@ -30,7 +30,21 @@ namespace ProductMicroServices
         {
           
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
-            services.AddDbContext<ProductContext>(options => options.UseSqlServer(Configuration.GetConnectionString("ProductDB")));
+            services.AddDbContext<ProductContext>(options => options.UseSqlServer(Configuration.GetConnectionString("ProductDB"),
+                
+                sqlServerOptionsAction: sqlOptions => {
+
+                sqlOptions.EnableRetryOnFailure(
+                     maxRetryCount: 25,
+                maxRetryDelay: TimeSpan.FromSeconds(60),
+                errorNumbersToAdd: null);
+
+                sqlOptions.CommandTimeout((int)TimeSpan.FromMinutes(10).TotalSeconds);
+
+                    
+            }
+                
+                ));
             services.AddTransient<IProductRepository, ProductRepository>();
             services.AddControllers();
         }
